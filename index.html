@@ -3,15 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PULSE ECHO - Voice Lab</title>
+  <title>PULSE ECHO - Voice Lab v1.2</title>
   <style>
     :root {
       --bg: #0f172a;
       --card: #1e293b;
-      --fire: #ff4757;
-      --sweat: #70a1ff;
-      --shock: #ffa502;
-      --bot: #2ed573;
     }
 
     body {
@@ -27,18 +23,9 @@
       align-items: center;
     }
 
-    h1 {
-      font-size: 1.1rem;
-      margin-bottom: 2px;
-      color: #94a3b8;
-    }
-    .title {
-      font-size: 1.4rem;
-      font-weight: 800;
-      margin-bottom: 12px;
-    }
+    h1 { font-size: 1.1rem; margin-bottom: 2px; color: #94a3b8; }
+    .title { font-size: 1.4rem; font-weight: 800; margin-bottom: 12px; }
 
-    /* 同期ガイド注意書き */
     .sync-guide {
       background: rgba(251, 191, 36, 0.15);
       border: 1px solid #fbbf24;
@@ -54,15 +41,7 @@
       box-sizing: border-box;
     }
 
-    /* タイマー＆コントロール */
-    .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 16px;
-      width: 100%;
-      max-width: 400px;
-    }
+    .controls { width: 100%; max-width: 400px; margin-bottom: 16px; }
 
     button {
       width: 100%;
@@ -72,20 +51,15 @@
       font-size: 1.1rem;
       font-weight: bold;
       cursor: pointer;
-      transition: transform 0.1s, background 0.2s;
+      background: #3b82f6;
+      color: white;
+      transition: transform 0.1s;
     }
     button:active { transform: scale(0.96); }
+    button.listening { background: #ef4444; animation: pulse 1.5s infinite; }
 
-    .btn-start { background: #3b82f6; color: white; }
-    .btn-start.listening { background: #ef4444; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
 
-    @keyframes pulse {
-      0% { opacity: 1; }
-      50% { opacity: 0.6; }
-      100% { opacity: 1; }
-    }
-
-    /* 叫んだ瞬間の全画面フィードバック (0.6秒フラッシュ) */
     .flash-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -99,13 +73,10 @@
       pointer-events: none;
       transition: opacity 0.15s ease-out;
     }
-    .flash-overlay.active {
-      opacity: 1;
-    }
+    .flash-overlay.active { opacity: 1; }
     .flash-emoji { font-size: 6rem; }
-    .flash-text { font-size: 2rem; font-weight: bold; margin-top: 10px; color: #fff; text-align: center; padding: 0 16px; }
+    .flash-text { font-size: 1.8rem; font-weight: bold; margin-top: 10px; color: #fff; text-align: center; padding: 0 16px; }
 
-    /* 認識ログエリア */
     .log-container {
       width: 100%;
       max-width: 400px;
@@ -120,21 +91,17 @@
     .log-item {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       padding: 10px 12px;
       background: rgba(255,255,255,0.05);
       border-radius: 10px;
       margin-bottom: 8px;
-      animation: fadeIn 0.2s ease-out;
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
     }
     .log-time { font-size: 0.8rem; color: #64748b; font-family: monospace; }
-    .log-emoji { font-size: 1.5rem; }
-    .log-text { font-size: 1rem; font-weight: 600; flex: 1; }
-    .log-tag { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.1); }
+    .log-emoji { font-size: 1.4rem; }
+    .log-body { flex: 1; display: flex; flex-direction: column; }
+    .log-text { font-size: 0.95rem; font-weight: 600; color: #f8fafc; }
+    .log-tag { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
 
     .interim-box {
       margin-bottom: 8px;
@@ -148,46 +115,43 @@
 <body>
 
   <h1>PULSE ECHO VOICE-FIRST</h1>
-  <div class="title">🎙️ 音声感情検知テスト</div>
+  <div class="title">🎙️ 音声感情検知テスト v1.2</div>
 
-  <!-- 修正②: テレビ再生位置との同期ガイド -->
   <div class="sync-guide">
-    ⏱️ テレビのYouTube動画再生と【同時】にボタンを押してね！
+    ⏱️ テレビ動画再生と【同時】にスタートを押してね！
   </div>
 
   <div class="controls">
-    <button id="micBtn" class="btn-start">🎙️ 動画再生と同時にスタート</button>
+    <button id="micBtn">🎙️ 動画再生と同時にスタート</button>
   </div>
 
   <div id="interimText" class="interim-box">ボタンを押してテレビに向かって叫んでね！</div>
 
   <div class="log-container" id="logContainer">
     <div style="text-align:center; color:#64748b; font-size:0.85rem; padding-top:20px;">
-      「なんでやねん！」「よっしゃー！」「神パス！」など<br>叫んだ言葉が自動でタイムスタンプ付き保存されます！
+      叫んだ言葉（原文）と判定タグが分離して記録されます！
     </div>
   </div>
 
-  <!-- 発言時の瞬間フラッシュ画面 -->
   <div class="flash-overlay" id="flashOverlay">
     <div class="flash-emoji" id="flashEmoji">🔥</div>
     <div class="flash-text" id="flashText">ナイスー！</div>
   </div>
 
   <script>
-    // 辞書設定
     const DICTIONARY = [
       {
         emoji: "🔥",
         bg: "#ff4757",
-        keywords: ["よっしゃ", "よし", "神", "ナイス", "ナイスー", "いけ", "すごい", "ゴール", "入った", "うま", "完璧", "きた"],
-        defaultTag: "#神プレー"
+        keywords: ["よっしゃ", "よし", "神", "ナイス", "いけ", "すごい", "ゴール", "入った", "うま", "完璧", "きた"],
+        defaultTag: "#ナイス"
       },
       {
         emoji: "😅",
         bg: "#70a1ff",
-        // 修正①: 「ドマイ」→「どんまい」に修正！
-        keywords: ["なんでやねん", "なんで", "あちゃ", "やってもた", "あかん", "おしい", "惜しい", "ミス", "うそやん", "まじか", "どんまい"],
-        defaultTag: "#なんでやねん"
+        // ChatGPT案採用: 誤認識の文脈（欲しい/カウント等）はあえて生の辞書へ無理に混ぜず、判定用のみ対応
+        keywords: ["なんでやねん", "なんで", "あちゃ", "やってもた", "あかん", "おしい", "惜しい", "欲しい", "ミス", "うそやん", "まじか", "どんまい"],
+        defaultTag: "#惜しい"
       },
       {
         emoji: "😳",
@@ -198,15 +162,15 @@
       {
         emoji: "🤖",
         bg: "#2ed573",
-        keywords: ["シュート", "パス", "キーパー", "カット", "コーナー", "ファール", "カウンター"],
-        defaultTag: "#事実タグ"
+        keywords: ["シュート", "パス", "キーパー", "カット", "コーナー", "ファール", "カウンター", "カウント"],
+        defaultTag: "#ボイス"
       }
     ];
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert("お使いのブラウザは音声認識機能に対応していません。ChromeまたはSafariでお試しください！");
+      alert("ChromeまたはSafariでお試しください！");
     } else {
       const recognition = new SpeechRecognition();
       recognition.lang = 'ja-JP';
@@ -231,24 +195,31 @@
           micBtn.textContent = "🛑 測定中（テレビに向かって叫んで！）";
           micBtn.classList.add('listening');
         } else {
-          recognition.stop();
           isListening = false;
+          recognition.stop();
           micBtn.textContent = "🎙️ 動画再生と同時にスタート";
           micBtn.classList.remove('listening');
         }
       });
 
+      // アニキ案：再スタート時に少し間を置き、連続起動による音の鳴りっぱなしを防ぐ
       recognition.onend = () => {
-        if (isListening) recognition.start();
+        if (isListening) {
+          setTimeout(() => {
+            if (isListening) {
+              try { recognition.start(); } catch(e){}
+            }
+          }, 300);
+        }
       };
 
       recognition.onresult = (event) => {
         let interim = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
           if (event.results[i].isFinal) {
-            const finalSpeech = event.results[i][0].transcript.trim();
-            if (finalSpeech.length > 0) {
-              processSpeech(finalSpeech);
+            const rawText = event.results[i][0].transcript.trim();
+            if (rawText.length > 0) {
+              processSpeech(rawText);
             }
           } else {
             interim += event.results[i][0].transcript;
@@ -257,40 +228,40 @@
         interimText.textContent = interim ? `🎤 聞き取り中: ${interim}` : '🎤 テレビに向かって叫んで！';
       };
 
-      function processSpeech(text) {
-        let matchedEmotion = null;
+      function processSpeech(rawText) {
+        let matched = null;
 
         for (const item of DICTIONARY) {
           for (const kw of item.keywords) {
-            if (text.includes(kw)) {
-              matchedEmotion = {
+            if (rawText.includes(kw)) {
+              matched = {
                 emoji: item.emoji,
                 bg: item.bg,
                 tag: `#${kw}`,
-                text: text
+                rawText: rawText // 音声認識の原文をそのまま保持
               };
               break;
             }
           }
-          if (matchedEmotion) break;
+          if (matched) break;
         }
 
-        if (!matchedEmotion) {
-          matchedEmotion = {
+        if (!matched) {
+          matched = {
             emoji: "🤖",
             bg: "#2ed573",
             tag: "#ボイス",
-            text: text
+            rawText: rawText
           };
         }
 
-        triggerFlash(matchedEmotion);
-        addLog(matchedEmotion);
+        triggerFlash(matched);
+        addLog(matched);
       }
 
       function triggerFlash(data) {
         flashEmoji.textContent = data.emoji;
-        flashText.textContent = data.text;
+        flashText.textContent = data.rawText;
         flashOverlay.style.background = data.bg + "ee";
         flashOverlay.classList.add('active');
 
@@ -308,11 +279,15 @@
 
         const item = document.createElement('div');
         item.className = 'log-item';
+        
+        // ChatGPT案：画面上も「原文（しゃべった声）」と「判定タグ」を明確に分けて表示
         item.innerHTML = `
           <div class="log-time">${timeStr}</div>
           <div class="log-emoji">${data.emoji}</div>
-          <div class="log-text">${data.text}</div>
-          <div class="log-tag">${data.tag}</div>
+          <div class="log-body">
+            <div class="log-text">${data.rawText}</div>
+            <div class="log-tag">${data.tag}</div>
+          </div>
         `;
 
         if (logContainer.children.length === 1 && logContainer.children[0].tagName === 'DIV' && logContainer.children[0].style.textAlign === 'center') {
@@ -320,19 +295,6 @@
         }
 
         logContainer.insertBefore(item, logContainer.firstChild);
-
-        // 修正③: 今後のSupabase保存用のTODO領域
-        /* TODO: Supabase保存処理
-        const { error } = await supabase
-          .from('futsal_goods')
-          .insert({
-            video_id: videoId,         // 試合のYouTube ID
-            good_time: diffSec,        // 動画の経過秒数
-            description: data.emoji,   // 感情スタンプ (🔥 😅 😳 🤖)
-            user_name: userName,       // 発言者名（「俺やで」で設定した名前）
-            comment: data.text         // 拾った音声テキスト
-          });
-        */
       }
     }
   </script>
